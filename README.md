@@ -57,6 +57,8 @@ The business needed a solution that could:
 
 ## 🏗️ Solution Architecture
 
+<img width="1536" height="1024" alt="ChatGPT Image Jun 8, 2026, 12_10_38 AM" src="https://github.com/user-attachments/assets/47fd66be-6f84-430e-b9ab-bf806081a2e9" />
+
 The solution implements a modern event-driven data pipeline that captures every POS transaction in real-time and makes it available for analysis within minutes.
 
 ### Overall Flow
