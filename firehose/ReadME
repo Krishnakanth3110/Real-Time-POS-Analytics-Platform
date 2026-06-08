@@ -1,0 +1,27 @@
+
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out private_key.p8 -nocrypt
+
+
+ Windows PowerShell 
+ ------------------------
+(Get-Content private_key.p8) -notmatch "-----" -join "" | Set-Content -NoNewline private_key_kinesis.txt
+
+
+
+openssl rsa -in private_key.p8 -pubout -out public_key.pub
+
+
+
+Snowflake account URL
+https://xyjbefv-lu18527.snowflakecomputing.com
+
+devuser1
+
+Role :  accountadmin
+
+
+
+check user if able to access table from snowsql 
+
+snowsql -a xyjbefv-lu18527 -u devuser1 --private-key-path private_key.p8
+

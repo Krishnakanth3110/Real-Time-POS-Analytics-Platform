@@ -1,0 +1,21 @@
+create database retail_demo_db;
+
+CREATE OR REPLACE bronze;
+CREATE OR REPLACE silver;
+CREATE OR REPLACE gold;
+
+CREATE OR REPLACE TABLE retail_demo_db.bronze.retail_pos_raw (
+    raw_data VARIANT,
+    ingest_time TIMESTAMP_LTZ 
+);
+
+CREATE OR REPLACE STREAM retail_demo_db.bronze.retail_pos_raw_stream
+ON TABLE retail_demo_db.bronze.retail_pos_raw
+APPEND_ONLY = TRUE;
+
+
+
+
+
+
+

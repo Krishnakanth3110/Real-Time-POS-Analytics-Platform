@@ -1,0 +1,66 @@
+import snowflake.snowpark as snowpark
+from snowflake.snowpark.functions import col
+
+import pandas as pd
+import random
+
+def load_dim_tables_to_snowflake(session):
+
+    # 2. Generate synthetic dim_store data
+    dim_store = [
+        {
+            "store_id": str(295 + i),
+            "store_name": f"Store_{295 + i}",
+            "city": random.choice(["New York", "Los Angeles", "Chicago", "Houston", "Miami"]),
+            "region": random.choice(["East", "West", "Midwest", "South"]),
+            "country": "USA",
+            "is_active": random.choice([True, True, False])
+        }
+        for i in range(10)
+    ]
+    df_store = pd.DataFrame(dim_store)
+
+    # 3. Generate synthetic dim_product data
+    products = [
+        {"product_id": f"P{str(i).zfill(3)}", "price": round(random.uniform(5, 100), 2)}
+        for i in range(1, 101)
+    ]
+
+    categories = ["Electronics", "Clothing", "Home", "Toys", "Books"]
+    brands = ["BrandA", "BrandB", "BrandC", "BrandD"]
+
+    dim_product = [
+        {
+            "product_id": p["product_id"],
+            "product_name": f"Product_{p['product_id']}",
+            "category": random.choice(categories),
+            "sub_category": random.choice(["A", "B", "C"]),
+            "brand": random.choice(brands),
+            "price": p["price"]
+        }
+        for p in products
+    ]
+    df_product = pd.DataFrame(dim_product)
+
+    # 4. Load into Snowflake using Snowpark
+    df_store.columns = [col.upper() for col in df_store.columns]
+    df_product.columns = [col.upper() for col in df_product.columns]
+    session.create_dataframe(df_store).write.mode("overwrite").save_as_table("retail_demo_db.silver.dim_store")
+    session.create_dataframe(df_product).write.mode("overwrite").save_as_table("retail_demo_db.silver.dim_product")
+
+    print("✅ dim_store and dim_product successfully loaded.")
+
+    # Optional: Close session
+    session.close()
+    return session.create_dataframe(df_product)
+
+
+def main(session: snowpark.Session): 
+
+    # Print a sample of the dataframe to standard output.
+    dataframe=load_dim_tables_to_snowflake(session)
+
+
+    return dataframe
+
+

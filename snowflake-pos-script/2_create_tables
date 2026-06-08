@@ -1,0 +1,102 @@
+CREATE OR REPLACE TABLE retail_demo_db.silver.retail_pos_processed (
+    store_id STRING,
+    city STRING,
+    transaction_id STRING,
+    timestamp TIMESTAMP_LTZ,
+    product_id STRING,
+    price FLOAT,
+    quantity INTEGER,
+    total_amount FLOAT,
+    payment_method STRING,
+    is_canceled BOOLEAN,
+    is_refunded BOOLEAN,
+    refund_amount FLOAT,
+    refund_method STRING,
+    dq_check_passed BOOLEAN,  -- Optional: flag if record passed DQ rules
+    dq_error STRING           -- Optional: stores reason if failed
+);
+
+
+
+CREATE OR REPLACE TABLE retail_demo_db.silver.retail_pos_rejected (
+    store_id STRING,
+    city STRING,
+    transaction_id STRING,
+    timestamp TIMESTAMP_LTZ,
+    product_id STRING,
+    price FLOAT,
+    quantity INTEGER,
+    total_amount FLOAT,
+    payment_method STRING,
+    raw_refund STRING,
+    raw_cancel_item STRING,
+    dq_error STRING,
+    load_time TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+CREATE OR REPLACE TABLE retail_demo_db.silver.inventory (
+    id STRING PRIMARY KEY,             -- Product ID as STRING
+    item_name STRING,
+    price FLOAT,
+    units_sold INTEGER DEFAULT 0,
+    units_left INTEGER,
+    cost_price FLOAT,
+    reorder_point INTEGER,
+    description STRING,
+    image STRING,
+    last_updated TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE OR REPLACE TABLE retail_demo_db.silver.dim_store (
+    store_id STRING PRIMARY KEY,
+    store_name STRING,
+    city STRING,
+    region STRING,
+    country STRING,
+    is_active BOOLEAN
+);
+
+
+CREATE OR REPLACE TABLE retail_demo_db.silver.dim_product (
+    product_id STRING PRIMARY KEY,
+    product_name STRING,
+    category STRING,
+    sub_category STRING,
+    brand STRING,
+    price FLOAT
+);
+CREATE OR REPLACE TABLE retail_demo_db.silver.dim_payment_method (
+    payment_method STRING PRIMARY KEY,
+    method_type STRING,  -- e.g., Card, Cash, Wallet
+    provider STRING       -- e.g., Visa, Mastercard, PayPal
+);
+CREATE OR REPLACE TABLE retail_demo_db.silver.dim_time (
+    timestamp TIMESTAMP_LTZ PRIMARY KEY,
+    date DATE,
+    year INT,
+    quarter STRING,
+    month INT,
+    day INT,
+    day_of_week STRING,
+    hour INT
+);
+
+CREATE TABLE IF NOT EXISTS retail_demo_db.silver.error_log (
+    task_name STRING,
+    error_message STRING,
+    error_time TIMESTAMP
+);
+
+
+
+CREATE OR REPLACE TABLE retail_demo_db.gold.retail_sales_daily_summary (
+    summary_date DATE,
+    store_id STRING,
+    store_name STRING,
+    city STRING,
+    total_sales FLOAT,
+    total_transactions INT,
+    total_quantity INT,
+    total_refunds FLOAT
+);

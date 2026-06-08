@@ -1,0 +1,105 @@
+
+
+CREATE OR REPLACE TASK retail_demo_db.silver.process_retail_pos_raw_task
+WAREHOUSE = compute_wh
+SCHEDULE = '1 MINUTE'
+WHEN SYSTEM$STREAM_HAS_DATA('retail_demo_db.bronze.retail_pos_raw_stream')
+AS
+CALL retail_demo_db.silver.process_retail_pos_proc();
+
+
+
+CREATE OR REPLACE STREAM retail_demo_db.silver.retail_pos_processed_stream_1 ON TABLE retail_demo_db.silver.retail_pos_processed
+  APPEND_ONLY = TRUE;
+
+  
+CREATE OR REPLACE STREAM retail_demo_db.silver.retail_pos_processed_stream_2 ON TABLE retail_demo_db.silver.retail_pos_processed
+  APPEND_ONLY = TRUE;
+
+
+  
+CREATE OR REPLACE TASK retail_demo_db.silver.inventory_insert_task
+  WAREHOUSE = COMPUTE_WH
+  AFTER retail_demo_db.silver.process_retail_pos_raw_task
+AS
+INSERT INTO retail_demo_db.silver.inventory (id, item_name, price, units_sold, units_left, cost_price, reorder_point, description, image)
+SELECT DISTINCT
+    r.product_id, p.product_name, r.price, 0, 100, p.price, 100, '', ''
+FROM retail_demo_db.silver.retail_pos_processed r
+JOIN retail_demo_db.silver.dim_product p ON r.product_id = p.product_id
+WHERE r.dq_check_passed = TRUE
+  AND NOT EXISTS (
+      SELECT 1 FROM retail_demo_db.silver.inventory i WHERE i.id = r.product_id
+  );
+
+
+
+
+
+
+CREATE OR REPLACE TASK retail_demo_db.silver.update_inventory_task
+  WAREHOUSE = COMPUTE_WH
+  AFTER retail_demo_db.silver.inventory_insert_task
+WHEN SYSTEM$STREAM_HAS_DATA('retail_demo_db.silver.retail_pos_processed_stream_1')
+AS
+MERGE INTO retail_demo_db.silver.inventory AS inv
+USING (
+  SELECT 
+    product_id, 
+    SUM(CASE 
+        WHEN is_canceled THEN 0
+        WHEN is_refunded THEN -quantity 
+        ELSE quantity 
+    END) AS net_quantity,
+    SUM(CASE 
+        WHEN is_canceled THEN 0
+        WHEN is_refunded THEN -1 
+        ELSE 1 
+    END) AS net_units
+  FROM retail_demo_db.silver.retail_pos_processed_stream_1
+  WHERE dq_check_passed
+  GROUP BY product_id
+) AS tx
+ON inv.id = tx.product_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    units_left = inv.units_left - tx.net_units,
+    units_sold = inv.units_sold + tx.net_units;
+
+
+
+CREATE OR REPLACE TASK retail_demo_db.silver.retail_sales_daily_summary_task
+  WAREHOUSE = COMPUTE_WH
+  AFTER retail_demo_db.silver.process_retail_pos_raw_task
+  WHEN SYSTEM$STREAM_HAS_DATA('retail_demo_db.silver.retail_pos_processed_stream_2')
+AS
+MERGE INTO retail_demo_db.gold.retail_sales_daily_summary tgt
+USING (
+    SELECT
+        DATE(rp.timestamp) AS summary_date,
+        rp.store_id,
+        ds.store_name,
+        ds.city,
+        SUM(rp.total_amount) AS total_sales,
+        COUNT(DISTINCT rp.transaction_id) AS total_transactions,
+        SUM(rp.quantity) AS total_quantity,
+        SUM(CASE WHEN rp.is_refunded THEN rp.refund_amount ELSE 0 END) AS total_refunds
+    FROM retail_demo_db.silver.retail_pos_processed_stream_2 rp
+    LEFT JOIN retail_demo_db.silver.dim_store ds ON rp.store_id = ds.store_id
+    WHERE rp.is_canceled = FALSE
+    GROUP BY 1, 2, 3, 4
+) src
+ON tgt.store_id = src.store_id AND tgt.summary_date = src.summary_date
+WHEN MATCHED THEN UPDATE SET
+    store_name = src.store_name,
+    city = src.city,
+    total_sales = src.total_sales,
+    total_transactions = src.total_transactions,
+    total_quantity = src.total_quantity,
+    total_refunds = src.total_refunds
+WHEN NOT MATCHED THEN INSERT (
+    summary_date, store_id, store_name, city, total_sales, total_transactions, total_quantity, total_refunds
+) VALUES (
+    src.summary_date, src.store_id, src.store_name, src.city, src.total_sales, src.total_transactions, src.total_quantity, src.total_refunds
+);
+

@@ -1,0 +1,47 @@
+
+use role accountadmin;
+
+create user devuser1 type = 'service';
+
+
+alter user devuser1 set 
+    RSA_PUBLIC_KEY='MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnbQG9Sl/aCAfMd5QoxkF
+HWCehp9GPuuoM4UXuEFfv1G2/UyUshYBzvcMuILk8HDP5eQo+y0/aJzEVU03myWW
+eaMhxhavSd68Wc8q0kOc9xBx80JrIZ622bK/GTd+JuBH6ZboTsPg+KfxC9KTsH7q
+DnjR1DrvkljeojDYKxSWxU82XLWFJ7YKUvxeHNfACPAWHVOdiDO3oVJYvKG8xb7j
+syBwhbobAR1sQHqwicq2pOqJ7h+H8HHq9G/000vq23g/r0dnktQRblCsOeqLZiIU
+B9ddAfrFsRevWTyofJeXLSgPEBIZ6m/X0A6xq6H2Yvz5Oz02xtAWPOKJUGB4qH34
+nQIDAQAB';  
+
+grant role accountadmin to user devuser1;
+
+create database demo_retail;
+
+create schema demo;
+
+
+create or replace table taxi_data (
+    vendor_id NUMBER, 
+    tpep_pickup_datetime VARCHAR, 
+    tpep_dropoff_datetime VARCHAR, 
+    passenger_count NUMBER, 
+    trip_distance FLOAT, 
+    ratecode_id NUMBER, 
+    store_and_fwd_flag TEXT, 
+    pu_location_id NUMBER, 
+    do_location_id NUMBER, 
+    payment_type NUMBER, 
+    fare_amount FLOAT, 
+    extra FLOAT, 
+    mta_tax FLOAT, 
+    tip_amount FLOAT, 
+    tolls_amount FLOAT, 
+    improvement_surcharge FLOAT, 
+    total_amount FLOAT,
+    congestion_surcharge FLOAT
+);
+
+select count(*) from taxi_data
+
+aws_access_key_id = AKIAYRH5NGTBH6GZRW7A
+aws_secret_access_key = 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

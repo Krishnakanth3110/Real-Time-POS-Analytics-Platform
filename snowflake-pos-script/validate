@@ -1,0 +1,52 @@
+--drop stream retail_demo_db.bronze.retail_pos_raw_stream
+
+
+
+SHOW TASKS;
+
+
+alter task retail_demo_db.silver.retail_sales_daily_summary_task resume;
+alter task retail_demo_db.silver.update_inventory_task resume;
+alter task retail_demo_db.silver.inventory_insert_task resume;
+alter task retail_demo_db.silver.process_retail_pos_raw_task resume;
+
+
+
+alter task retail_demo_db.silver.process_retail_pos_raw_task suspend;
+alter task retail_demo_db.silver.retail_sales_daily_summary_task suspend;
+alter task retail_demo_db.silver.inventory_insert_task suspend;
+alter task retail_demo_db.silver.update_inventory_task suspend;
+
+
+truncate retail_demo_db.bronze.retail_pos_raw;
+truncate retail_demo_db.silver.retail_pos_processed;
+truncate retail_demo_db.silver.inventory;
+truncate retail_demo_db.gold.retail_sales_daily_summary;
+
+
+
+
+select count(*) from retail_demo_db.bronze.retail_pos_raw
+
+select count(*) from retail_demo_db.silver.retail_pos_processed 
+
+
+select * from retail_demo_db.silver.inventory
+select * from retail_demo_db.gold.retail_sales_daily_summary 
+
+
+
+
+
+
+select * from retail_demo_db.silver.retail_pos_processed WHERE timestamp >= DATEADD(minute, -5, CURRENT_TIMESTAMP())
+select * from retail_demo_db.silver.retail_pos_processed WHERE TRANSACTION_ID='txn_10590'
+
+select * from retail_demo_db.silver.retail_pos_processed_stream_1
+select * from retail_demo_db.silver.retail_pos_processed_stream_2
+select * from retail_demo_db.silver.dim_store
+
+select * from retail_demo_db.silver.inventory
+
+
+
