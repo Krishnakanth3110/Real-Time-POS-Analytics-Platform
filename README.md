@@ -456,18 +456,4 @@ This project welcomes feedback and contributions:
 
 ---
 
-## 📞 Connect
-
-- **LinkedIn**: [Your LinkedIn Profile URL]
-- **Email**: [Your Email]
-- **Portfolio**: [Your Portfolio Website]
-
----
-
-## 📄 License
-
-This project is provided as-is for portfolio purposes.
-
----
-
 **Built with ❤️ | Data Engineering | Cloud Architecture | Analytics | Real-Time Systems**
