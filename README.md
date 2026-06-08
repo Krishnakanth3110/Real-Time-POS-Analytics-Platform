@@ -9,7 +9,6 @@
 [![SQL](https://img.shields.io/badge/SQL-Advanced-orange?style=flat-square)](https://en.wikipedia.org/wiki/SQL)
 
 ---
-<img width="1536" height="1024" alt="ChatGPT Image Jun 6, 2026, 04_46_35 PM" src="https://github.com/user-attachments/assets/648a3027-7998-4451-85d9-501c88d925d4" />
 
 
 ## 📋 Table of Contents
