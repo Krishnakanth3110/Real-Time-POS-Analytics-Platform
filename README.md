@@ -1,4 +1,4 @@
-# 🏪 Real-Time POS Analytics Platform
+# 🏪 Real-Time POS Analytics Platform using Snowflake
 
 > **Enterprise-grade real-time analytics solution** that reduced reporting latency from **6 hours to under 5 minutes** for 500+ retail stores using AWS, Snowflake, and event-driven architecture.
 
